@@ -52,18 +52,38 @@
             border-radius: 0.5rem;
             margin-bottom: 1rem;
         }
+        .review-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        .review-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-left: 1rem;
+        }
+        .review-text {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
     <header class="header">
         <h1 class="text-4xl font-bold">מכון קוסמטיקה - טיפולי פנים ✨</h1>
         <p class="mt-2 text-lg">יופי, בריאות ואיכות - הכל במקום אחד</p>
+        <p class="mt-1 text-md">בקליניקה פרטית שמציעה מגוון טיפולים כמו הסרת שיער בלייזר, טיפולי פנים, אנטי אייג’ינג, פילינג ועוד</p>
     </header>
 
     <nav class="flex justify-center space-x-4 space-x-reverse my-4">
         <button class="nav-button" onclick="showSection('management')">דשבורד ניהולי 📊</button>
         <button class="nav-button" onclick="showSection('strategic')">דשבורד אסטרטגי 📈</button>
         <button class="nav-button" onclick="showSection('operational')">דשבורד תפעולי 🛠️</button>
+        <button class="nav-button" onclick="showSection('reviews')">ביקורות לקוחות 🌟</button>
     </nav>
 
     <div class="dashboard-container">
@@ -144,6 +164,31 @@
                 </object>
             </div>
         </section>
+
+        <section id="reviews" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">ביקורות לקוחות 🌟</h2>
+            <div class="review-card">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&q=80" alt="לקוחה 1" class="review-image">
+                <div class="review-text">
+                    <h3 class="text-lg font-semibold">מיכל כהן</h3>
+                    <p>הטיפול היה מדהים! העור שלי מרגיש חלק וזוהר יותר מאי פעם. הצוות מקצועי ואדיב מאוד! 😊</p>
+                </div>
+            </div>
+            <div class="review-card">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&q=80" alt="לקוח 2" class="review-image">
+                <div class="review-text">
+                    <h3 class="text-lg font-semibold">איתן לוי</h3>
+                    <p>חוויה נהדרת! המכון משתמש בטכנולוגיה מתקדמת והתוצאות מדברות בעד עצמן. ממליץ בחום! 👍</p>
+                </div>
+            </div>
+            <div class="review-card">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=80&q=80" alt="לקוחה 3" class="review-image">
+                <div class="review-text">
+                    <h3 class="text-lg font-semibold">שרה מלכה</h3>
+                    <p>השירות כאן יוצא מן הכלל! הרגשתי מפנקת ומותאמת אישית. בהחלט אחזור שוב! 🌺</p>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -153,27 +198,29 @@
             });
             document.getElementById(sectionId).classList.remove('hidden');
 
-            // Load Tableau dashboards dynamically
+            // Load Tableau dashboards dynamically only for dashboard sections
             const vizIds = {
                 'management': 'viz1751108953978',
                 'strategic': 'viz1751109637496',
                 'operational': 'viz1751109133427'
             };
-            const divElement = document.getElementById(vizIds[sectionId]);
-            const vizElement = divElement.getElementsByTagName('object')[0];
-            if (divElement.offsetWidth > 800) {
-                vizElement.style.width = '100%';
-                vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-            } else if (divElement.offsetWidth > 500) {
-                vizElement.style.width = '100%';
-                vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-            } else {
-                vizElement.style.width = '100%';
-                vizElement.style.height = sectionId === 'strategic' ? '777px' : '727px';
+            if (vizIds[sectionId]) {
+                const divElement = document.getElementById(vizIds[sectionId]);
+                const vizElement = divElement.getElementsByTagName('object')[0];
+                if (divElement.offsetWidth > 800) {
+                    vizElement.style.width = '100%';
+                    vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+                } else if (divElement.offsetWidth > 500) {
+                    vizElement.style.width = '100%';
+                    vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+                } else {
+                    vizElement.style.width = '100%';
+                    vizElement.style.height = sectionId === 'strategic' ? '777px' : '727px';
+                }
+                const scriptElement = document.createElement('script');
+                scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+                vizElement.parentNode.insertBefore(scriptElement, vizElement);
             }
-            const scriptElement = document.createElement('script');
-            scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-            vizElement.parentNode.insertBefore(scriptElement, vizElement);
         }
 
         // Show management dashboard by default
