@@ -1,438 +1,183 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>קליניקה קוסמטית</title>
+    <title>מכון קוסמטיקה - טיפולי פנים</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f0ff; /* סגול בהיר כרקע */
-            color: #333;
-            line-height: 1.6;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff, #d1fae5);
+            color: #1f2937;
+            direction: rtl;
         }
-        .container {
+        .header {
+            background: linear-gradient(to right, #6b7280, #4c1d95);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .nav-button {
+            background-color: #10b981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .nav-button:hover {
+            background-color: #059669;
+            transform: scale(1.05);
+        }
+        .section {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-container {
+            margin: 2rem auto;
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
         }
-        /* Header */
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 10px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        .emoji {
+            font-size: 1.5rem;
+            margin-left: 0.5rem;
         }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #6a0dad; /* סגול כהה */
-        }
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-        }
-        nav ul li a {
-            color: #333;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        nav ul li a:hover {
-            color: #2e8b57; /* ירוק בהובר */
-        }
-        /* Hero Section */
-        .hero {
-            background-image: url('https://via.placeholder.com/1200x400?text=תמונת+גיבור+קליניקה');
-            background-size: cover;
-            background-position: center;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        .hero h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        .hero p {
-            font-size: 18px;
-        }
-        /* Services Section */
-        .services {
-            padding: 40px 0;
-            text-align: center;
-        }
-        .services h2 {
-            color: #2e8b57; /* ירוק כהה */
-            margin-bottom: 20px;
-        }
-        .service-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .service-card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        .service-card:hover {
-            transform: translateY(-5px);
-        }
-        .service-card h3 {
-            color: #6a0dad; /* סגול כהה */
-            margin-bottom: 10px;
-        }
-        /* Gallery Section */
-        .gallery {
-            padding: 40px 0;
-            text-align: center;
-        }
-        .gallery h2 {
-            color: #2e8b57;
-            margin-bottom: 20px;
-        }
-        .gallery-images {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-        .gallery-images img {
+        .hero-image {
             width: 100%;
-            height: auto;
-            border-radius: 8px;
-            border: 2px solid #6a0dad;
-        }
-        /* Calendar Section */
-        .calendar {
-            padding: 40px 0;
-            text-align: center;
-        }
-        .calendar h2 {
-            color: #2e8b57;
-            margin-bottom: 20px;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .calendar-grid div {
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-            cursor: pointer;
-        }
-        .calendar-grid div:hover {
-            background-color: #6a0dad;
-            color: #fff;
-        }
-        .calendar-grid .header {
-            background-color: #2e8b57;
-            color: #fff;
-            font-weight: bold;
-            cursor: default;
-        }
-        .calendar-grid .inactive {
-            background-color: #eee;
-            color: #999;
-            cursor: default;
-        }
-        /* Testimonials Section */
-        .testimonials {
-            padding: 40px 0;
-            text-align: center;
-            background-color: #f9f9f9;
-        }
-        .testimonials h2 {
-            color: #2e8b57;
-            margin-bottom: 20px;
-        }
-        .testimonial-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .testimonial-card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .testimonial-card p {
-            font-style: italic;
-            color: #444;
-        }
-        .testimonial-card h4 {
-            color: #6a0dad;
-            margin-top: 10px;
-        }
-        /* Tableau Section */
-        .tableau-embed {
-            padding: 40px 0;
-            text-align: center;
-        }
-        .tableau-embed h2 {
-            color: #2e8b57;
-            margin-bottom: 20px;
-        }
-        iframe {
-            border: none;
-            width: 100%;
-            height: 600px;
-        }
-        /* Footer */
-        footer {
-            background-color: #6a0dad;
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-        }
-        footer a {
-            color: #2e8b57;
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-            nav ul {
-                flex-direction: column;
-                gap: 10px;
-                margin-top: 10px;
-            }
-            .hero h1 {
-                font-size: 24px;
-            }
-            .hero p {
-                font-size: 16px;
-            }
+            height: 300px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div class="logo">קליניקה קוסמטית</div>
-            <nav>
-                <ul>
-                    <li><a href="#home">בית</a></li>
-                    <li><a href="#services">שירותים</a></li>
-                    <li><a href="#gallery">גלריה</a></li>
-                    <li><a href="#calendar">קביעת תור</a></li>
-                    <li><a href="#data">ניתוח נתונים</a></li>
-                </ul>
-            </nav>
-        </div>
+    <header class="header">
+        <h1 class="text-4xl font-bold">מכון קוסמטיקה - טיפולי פנים ✨</h1>
+        <p class="mt-2 text-lg">יופי, בריאות ואיכות - הכל במקום אחד</p>
     </header>
 
-    <section class="hero" id="home">
-        <div>
-            <h1>קליניקה קוסמטית</h1>
-            <p>טיפולים מתקדמים לשיפור המראה והביטחון העצמי</p>
-        </div>
-    </section>
+    <nav class="flex justify-center space-x-4 space-x-reverse my-4">
+        <button class="nav-button" onclick="showSection('management')">דשבורד ניהולי 📊</button>
+        <button class="nav-button" onclick="showSection('strategic')">דשבורד אסטרטגי 📈</button>
+        <button class="nav-button" onclick="showSection('operational')">דשבורד תפעולי 🛠️</button>
+    </nav>
 
-    <div class="container">
-        <section class="services" id="services">
-            <h2>השירותים שלנו</h2>
-            <div class="service-cards">
-                <div class="service-card">
-                    <h3>טיפולי פנים</h3>
-                    <p>טיפולים מותאמים אישית לעור זוהר ובריא.</p>
-                </div>
-                <div class="service-card">
-                    <h3>הסרת שיער בלייזר</h3>
-                    <p>טכנולוגיה מתקדמת להסרת שיער לצמיתות.</p>
-                </div>
-                <div class="service-card">
-                    <h3>טיפולי אנטי-אייג'ינג</h3>
-                    <p>פתרונות מתקדמים להפחתת קמטים וקמטוטים.</p>
-                </div>
+    <div class="dashboard-container">
+        <section id="management" class="section">
+            <h2 class="text-2xl font-bold mb-4">דשבורד ניהולי 📊</h2>
+            <img src="https://images.unsplash.com/photo-1512496013970-8e91b7c8b636?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80" alt="טיפול פנים" class="hero-image">
+            <div class='tableauPlaceholder' id='viz1751108953978' style='position: relative'>
+                <noscript>
+                    <a href='#'><img alt='Dashboard 3' src='https://public.tableau.com/static/images/_1/_17511089421690/Dashboard3/1_rss.png' style='border: none' /></a>
+                </noscript>
+                <object class='tableauViz' style='display:none;'>
+                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+                    <param name='embed_code_version' value='3' />
+                    <param name='site_root' value='' />
+                    <param name='name' value='_17511089421690/Dashboard3' />
+                    <param name='tabs' value='no' />
+                    <param name='toolbar' value='yes' />
+                    <param name='static_image' value='https://public.tableau.com/static/images/_1/_17511089421690/Dashboard3/1.png' />
+                    <param name='animate_transition' value='yes' />
+                    <param name='display_static_image' value='yes' />
+                    <param name='display_spinner' value='yes' />
+                    <param name='display_overlay' value='yes' />
+                    <param name='display_count' value='yes' />
+                    <param name='language' value='en-US' />
+                    <param name='filter' value='publish=yes' />
+                </object>
             </div>
         </section>
 
-        <section class="testimonials" id="testimonials">
-            <h2>מה לקוחות אומרים</h2>
-            <div class="testimonial-cards">
-                <div class="testimonial-card">
-                    <p>"הטיפול היה מדהים, הצוות מקצועי וקשוב!"</p>
-                    <h4>שרה ל.</h4>
-                </div>
-                <div class="testimonial-card">
-                    <p>"ראיתי תוצאות מדהמות לאחר טיפול אחד בלבד!"</p>
-                    <h4>מיכל כ.</h4>
-                </div>
+        <section id="strategic" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">דשבורד אסטרטגי 📈</h2>
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80" alt="טיפוח עור" class="hero-image">
+            <div class='tableauPlaceholder' id='viz1751109637496' style='position: relative'>
+                <noscript>
+                    <a href='#'><img alt='Dashboard 4' src='https://public.tableau.com/static/images/_1/_17511090171190/Dashboard4/1_rss.png' style='border: none' /></a>
+                </noscript>
+                <object class='tableauViz' style='display:none;'>
+                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+                    <param name='embed_code_version' value='3' />
+                    <param name='site_root' value='' />
+                    <param name='name' value='_17511090171190/Dashboard4' />
+                    <param name='tabs' value='no' />
+                    <param name='toolbar' value='yes' />
+                    <param name='static_image' value='https://public.tableau.com/static/images/_1/_17511090171190/Dashboard4/1.png' />
+                    <param name='animate_transition' value='yes' />
+                    <param name='display_static_image' value='yes' />
+                    <param name='display_spinner' value='yes' />
+                    <param name='display_overlay' value='yes' />
+                    <param name='display_count' value='yes' />
+                    <param name='language' value='en-US' />
+                    <param name='filter' value='publish=yes' />
+                </object>
             </div>
         </section>
 
-        <section class="tableau-embed" id="data">
-            <h2>נית-Sanitation נתונים</h2>
-            <p>הפרויקט עוסק בניתוח נתונים מקליניקה קוסמטית בתל אביב, הכוללים מידע על לקוחות, סוגי טיפולים, שביעות רצון ועוד.</p>
-            <h3>דשבורדים עיקריים:</h3>
-            <ul>
-                <li><a href="https://public.tableau.com/views/Clinic_Treatments">טיפולים לפי סוג</a></li>
-                <li><a href="https://public.tableau.com/views/Satisfaction_Avg">שביעות רצון ממוצעת</a></li>
-                <li><a href="https://public.tableau.com/views/Treatments_Per_Month">טיפולים לפי חודשים</a></li>
-            </ul>
-            <p>המערכת מאפשרת לצוות הקליניקה להבין מגמות, לזהות עומסים, ולשפר את חוויית הלקוחות.</p>
-            <h3>דשבורד נוסף</h3>
-
-    <div class='tableauPlaceholder' id='viz1751095730097' style='position: relative'>
-        <noscript>
-            <a href='#'>
-                <img alt='Dashboard 2 ' src='https://public.tableau.com/static/images/_1/_17510956183700/Dashboard2/1_rss.png' style='border: none' />
-            </a>
-        </noscript>
-        <object class='tableauViz' style='display:none;'>
-            <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
-            <param name='embed_code_version' value='3' />
-            <param name='site_root' value='' />
-            <param name='name' value='_17510956183700/Dashboard2' />
-            <param name='tabs' value='no' />
-            <param name='toolbar' value='yes' />
-            <param name='static_image' value='https://public.tableau.com/static/images/_1/_17510956183700/Dashboard2/1.png' />
-            <param name='animate_transition' value='yes' />
-            <param name='display_static_image' value='yes' />
-            <param name='display_spinner' value='yes' />
-            <param name='display_overlay' value='yes' />
-            <param name='display_count' value='yes' />
-            <param name='language' value='en-US' />
-        </object>
-    </div>
-    <script type='text/javascript'>
-        var divElement = document.getElementById('viz1751095730097');
-        var vizElement = divElement.getElementsByTagName('object')[0];
-        if (divElement.offsetWidth > 800) {
-            vizElement.style.width = '100%';
-            vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-        } else if (divElement.offsetWidth > 500) {
-            vizElement.style.width = '100%';
-            vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-        } else {
-            vizElement.style.width = '100%';
-            vizElement.style.height = '1677px';
-        }
-        var scriptElement = document.createElement('script');
-        scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-        vizElement.parentNode.insertBefore(scriptElement, vizElement);
-    </script>
+        <section id="operational" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">דשבורד תפעולי 🛠️</h2>
+            <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80" alt="מכשור קוסמטי" class="hero-image">
+            <div class='tableauPlaceholder' id='viz1751109133427' style='position: relative'>
+                <noscript>
+                    <a href='#'><img alt='Dashboard 5' src='https://public.tableau.com/static/images/_1/_17511090967640/Dashboard5/1_rss.png' style='border: none' /></a>
+                </noscript>
+                <object class='tableauViz' style='display:none;'>
+                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+                    <param name='embed_code_version' value='3' />
+                    <param name='site_root' value='' />
+                    <param name='name' value='_17511090967640/Dashboard5' />
+                    <param name='tabs' value='no' />
+                    <param name='toolbar' value='yes' />
+                    <param name='static_image' value='https://public.tableau.com/static/images/_1/_17511090967640/Dashboard5/1.png' />
+                    <param name='animate_transition' value='yes' />
+                    <param name='display_static_image' value='yes' />
+                    <param name='display_spinner' value='yes' />
+                    <param name='display_overlay' value='yes' />
+                    <param name='display_count' value='yes' />
+                    <param name='language' value='en-US' />
+                    <param name='filter' value='publish=yes' />
+                </object>
+            </div>
         </section>
     </div>
-
-    <footer>
-        <p>קליניקה קוסמטית | תל אביב | <a href="mailto:info@clinic.co.il">info@clinic.co.il</a></p>
-        <p><a href="#">פייסבוק</a> | <a href="#">אינסטגרם</a></p>
-    </footer>
 
     <script>
-        // פונקציה ליצירת לוח שנה
-        function generateCalendar() {
-            const calendar = document.getElementById('calendar');
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            // כותרות ימות השבוע
-            const daysOfWeek = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
-            daysOfWeek.forEach(day => {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'header';
-                dayHeader.textContent = day;
-                calendar.appendChild(dayHeader);
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
             });
+            document.getElementById(sectionId).classList.remove('hidden');
 
-            // הוספת ימים ריקים לפני תחילת החודש
-            for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'inactive';
-                calendar.appendChild(emptyDay);
+            // Load Tableau dashboards dynamically
+            const vizIds = {
+                'management': 'viz1751108953978',
+                'strategic': 'viz1751109637496',
+                'operational': 'viz1751109133427'
+            };
+            const divElement = document.getElementById(vizIds[sectionId]);
+            const vizElement = divElement.getElementsByTagName('object')[0];
+            if (divElement.offsetWidth > 800) {
+                vizElement.style.width = '100%';
+                vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+            } else if (divElement.offsetWidth > 500) {
+                vizElement.style.width = '100%';
+                vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+            } else {
+                vizElement.style.width = '100%';
+                vizElement.style.height = sectionId === 'strategic' ? '777px' : '727px';
             }
-
-            // הוספת ימי החודש
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('div');
-                dayElement.textContent = day;
-                dayElement.onclick = () => alert(נבחר תאריך: ${day}/${month + 1}/${year});
-                calendar.appendChild(dayElement);
-            }
+            const scriptElement = document.createElement('script');
+            scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+            vizElement.parentNode.insertBefore(scriptElement, vizElement);
         }
 
-        // הפעלת הפונקציה עם טעינת הדף
-        window.onload = generateCalendar;
+        // Show management dashboard by default
+        showSection('management');
     </script>
 </body>
 </html>
